@@ -75,7 +75,6 @@ prepare() {
     mv squashfs-root/Licenses .
     mkdir -p {squashfs-root,unused-libs}/Licenses
     for _license in \
-        Botan_License.txt \
         eID-klient-licencne-podmienky.rtf \
         eID_Klient_License.rtf \
         nlohmann_json_License.txt \
@@ -83,6 +82,7 @@ prepare() {
         mv {.,squashfs-root}/Licenses/"${_license}"
     done
     for _license in \
+        Botan_License.txt \
         OpenJPEG_License.txt \
         OpenSSL_License.txt \
         Qt_License.txt \
@@ -95,7 +95,6 @@ prepare() {
     mkdir squashfs-root/lib
     for _lib in \
         VirtualKeyboard \
-        libbotan-2.so.18 \
         "${_libs_to_copy[@]}" \
         ; do
         mv {unused-libs,squashfs-root}/lib/"${_lib}"
@@ -114,6 +113,7 @@ package_eidklient-native() {
     depends=(
         bash
         binutils
+        botan2.18
         glibc
         hicolor-icon-theme
         libcrypto.so
@@ -170,7 +170,6 @@ package_eidklient-native() {
     #ln -s /usr/bin/eID_Client "${pkgdir}/usr/bin/VirtualKeyboard"
 
     install -dm755 "${pkgdir}/usr/lib/eID_klient"
-    ln -s "/opt/${pkgbase}/lib/libbotan-2.so.18" "${pkgdir}/usr/lib/eID_klient/"
     ln -s /usr/bin/eID_Client "${pkgdir}/usr/lib/eID_klient/VirtualKeyboard"
     # Duplicating these libraries is required for proper functioning.
     # They have runpath set to the directory they are located in. libpkcs11 is
