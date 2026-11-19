@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# Runs tests on the installed package.
+
+set -eo pipefail
+
+export QT_QPA_PLATFORM=offscreen
+
+test_dependency_paths() {
+	local env_var=$1
+	shift
+
+	local executable=$1
+	shift
+
+	local expected_libs
+	expected_libs=$(</dev/stdin)
+
+	echo -n "Testing ${env_var} ${executable} … "
+
+	local actual_libs
+	actual_libs=$(
+		gdb \
+			-batch \
+			-ex "set environment ${env_var}" \
+			-ex "set args 2>/dev/null" \
+			-ex start \
+			-ex "info sharedlibrary" \
+			"${executable}" \
+			"$@" |
+			grep ^0x |
+			awk '{print $5}' |
+			xargs realpath -e |
+			grep -E '^/(opt/eidklient-native|usr/lib/eID_klient)/' |
+			sort
+	)
+
+	local diff_output
+	if diff_output=$(
+		diff -u <(echo "${expected_libs}") <(echo "${actual_libs}")
+	); then
+		echo OK
+		return
+	fi
+
+	echo FAIL
+	echo "${diff_output}"
+
+	return 1
+}
+
+main() {
+	test_dependency_paths \
+		LD_LIBRARY_PATH=/usr/lib/eID_klient:/usr/lib \
+		/opt/eidklient-native/eID_Client \
+		<<-'EXPECTED_LIBS'
+			/opt/eidklient-native/lib/libbotan-2.so.18
+			/usr/lib/eID_klient/libCardAPI.so
+			/usr/lib/eID_klient/libQt6Core.so.6
+			/usr/lib/eID_klient/libQt6Widgets.so.6
+		EXPECTED_LIBS
+
+	test_dependency_paths \
+		LD_LIBRARY_PATH=/usr/lib/eID_klient:/usr/lib \
+		/opt/eidklient-native/VirtualKeyboard \
+		<<-'EXPECTED_LIBS'
+			/opt/eidklient-native/lib/libbotan-2.so.18
+			/usr/lib/eID_klient/libQt6Core.so.6
+			/usr/lib/eID_klient/libQt6Widgets.so.6
+		EXPECTED_LIBS
+
+	test_dependency_paths \
+		LD_PRELOAD=/usr/lib/eID_klient/libpkcs11_x64.so \
+		/bin/true \
+		-iex "set debuginfod enabled on" \
+		<<-'EXPECTED_LIBS'
+			/opt/eidklient-native/lib/libbotan-2.so.18
+			/usr/lib/eID_klient/libCardAPI.so
+			/usr/lib/eID_klient/libpkcs11_x64.so
+		EXPECTED_LIBS
+}
+
+main "$@"

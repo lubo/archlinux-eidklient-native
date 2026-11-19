@@ -23,6 +23,7 @@ path = [
     "eID_Client",
     "patch-qt",
     "qt6.conf",
+    "test",
 ]
 SPDX-FileCopyrightText = "eidklient-native contributors"
 SPDX-License-Identifier = "0BSD"
