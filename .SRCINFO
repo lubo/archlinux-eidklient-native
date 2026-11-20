@@ -1,7 +1,7 @@
 pkgbase = eidklient-native
 	pkgdesc = Slovak eID Client - uses system-provided libraries, supports Wayland, …
 	pkgver = 5.5
-	pkgrel = 2
+	pkgrel = 3
 	url = https://www.slovensko.sk/
 	arch = i686
 	arch = x86_64
@@ -45,4 +45,4 @@ pkgname = eidklient-native
 
 pkgname = eidklient-native-unused-libs
 	pkgdesc = eidklient-native libraries required only for integrity checks
-	depends = eidklient-native=5.5-2
+	depends = eidklient-native=5.5-3
